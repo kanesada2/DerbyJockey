@@ -1,13 +1,13 @@
 package com.github.kanesada2.DerbyJockey;
 
-import org.bukkit.entity.Horse;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class SpeedLevelManager {
-	private Horse horse;
+	private AbstractHorse horse;
 	private int level = 0;
-	public SpeedLevelManager(Horse horse){
+	public SpeedLevelManager(AbstractHorse horse){
 		this.horse = horse;
 		if(horse.hasPotionEffect(PotionEffectType.SPEED)){
 			this.level = horse.getPotionEffect(PotionEffectType.SPEED).getAmplifier();

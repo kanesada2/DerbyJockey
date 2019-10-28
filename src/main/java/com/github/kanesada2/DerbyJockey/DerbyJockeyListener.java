@@ -2,6 +2,8 @@ package com.github.kanesada2.DerbyJockey;
 
 import java.util.Collection;
 
+import com.google.common.util.concurrent.AbstractFuture;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -10,13 +12,14 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -31,14 +34,15 @@ public class DerbyJockeyListener implements Listener {
 	private DerbyJockey plugin;
 
 	public DerbyJockeyListener(DerbyJockey plugin) {
-        this.plugin = plugin;
-    }
+		this.plugin = plugin;
+	}
+
 	@EventHandler(priority = EventPriority.LOW)
-	public void onEnter(VehicleEnterEvent e){
-		if(!(e.getVehicle() instanceof Horse && e.getEntered() instanceof Player)){
+	public void onEnter(VehicleEnterEvent e) {
+		if (!(e.getVehicle() instanceof AbstractHorse && e.getEntered() instanceof Player)) {
 			return;
 		}
-		Horse horse = (Horse)e.getVehicle();
+		AbstractHorse horse = (AbstractHorse) e.getVehicle();
 		Player player = (Player)e.getEntered();
 		if(!Util.isHorseWhip(player.getInventory().getItemInMainHand())){
 			return;
@@ -82,10 +86,10 @@ public class DerbyJockeyListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onExit(VehicleExitEvent e){
-		if(!(e.getVehicle() instanceof Horse && e.getExited() instanceof Player)){
+		if(!(e.getVehicle() instanceof AbstractHorse && e.getExited() instanceof Player)){
 			return;
 		}
-		Horse horse = (Horse)e.getVehicle();
+		AbstractHorse horse = (AbstractHorse)e.getVehicle();
 		Player player = (Player)e.getExited();
 		if(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("good")){
 			BossBar bar = (BossBar)horse.getMetadata("bar").get(0).value();
@@ -116,11 +120,11 @@ public class DerbyJockeyListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onSprint(PlayerMoveEvent e){
-		if(!(e.getPlayer().isInsideVehicle() && e.getPlayer().getVehicle() instanceof Horse)){
+		if(!(e.getPlayer().isInsideVehicle() && e.getPlayer().getVehicle() instanceof AbstractHorse)){
 			return;
 		}
 		Player player = e.getPlayer();
-		Horse horse = (Horse)player.getVehicle();
+		AbstractHorse horse = (AbstractHorse)player.getVehicle();
 		if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("good"))){
 			return;
 		}
@@ -153,7 +157,7 @@ public class DerbyJockeyListener implements Listener {
 			new StaminaBarManager(horse, bar, level).unleash();
 		}
 		if(horse.hasMetadata("targeting")){
-			Horse target = (Horse)horse.getMetadata("targeting").get(0).value();
+			AbstractHorse target = (AbstractHorse)horse.getMetadata("targeting").get(0).value();
 			if(horse.getLocation().distance(target.getLocation()) >= 10){
 				if(horse.hasMetadata("unleashed")){
 					bar.setColor(BarColor.PINK);
@@ -184,11 +188,11 @@ public class DerbyJockeyListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onHorseWhip(PlayerInteractEvent e){
-		if(!(e.getPlayer().isInsideVehicle() && e.getPlayer().getVehicle() instanceof Horse)){
+		if(!(e.getPlayer().isInsideVehicle() && e.getPlayer().getVehicle() instanceof AbstractHorse)){
 			return;
 		}
 		Player player = e.getPlayer();
-		Horse horse = (Horse)e.getPlayer().getVehicle();
+		AbstractHorse horse = (AbstractHorse)e.getPlayer().getVehicle();
 		if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("good"))){
 			return;
 		}
@@ -224,10 +228,10 @@ public class DerbyJockeyListener implements Listener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void onTarget(PlayerSwapHandItemsEvent e){
 		Player player = e.getPlayer();
-		if(!(player.isInsideVehicle() && player.getVehicle() instanceof Horse)){
+		if(!(player.isInsideVehicle() && player.getVehicle() instanceof AbstractHorse)){
 			return;
 		}
-		Horse horse = (Horse)player.getVehicle();
+		AbstractHorse horse = (AbstractHorse)player.getVehicle();
 		if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("good"))){
 			return;
 		}
@@ -242,10 +246,10 @@ public class DerbyJockeyListener implements Listener {
 			horse.removeMetadata("targeting", plugin);
 		}
 		Collection<Entity> entities = horse.getNearbyEntities(5, 2, 5);
-		Horse target = null;
+		AbstractHorse target = null;
 		for(Entity entity : entities){
-			if(entity instanceof Horse && entity.hasMetadata("good")){
-				target = (Horse)entity;
+			if(entity instanceof AbstractHorse && entity.hasMetadata("good")){
+				target = (AbstractHorse)entity;
 				break;
 			}
 		}
@@ -268,10 +272,10 @@ public class DerbyJockeyListener implements Listener {
 	/*@EventHandler(priority = EventPriority.LOW)
 	public void onTarget(PlayerDropItemEvent e){
 		Player player = (Player)e.getPlayer();
-		if(!(player.isInsideVehicle() && player.getVehicle() instanceof Horse)){
+		if(!(player.isInsideVehicle() && player.getVehicle() instanceof AbstractHorse)){
 			return;
 		}
-		Horse target = (Horse)player.getVehicle();
+		AbstractHorse target = (AbstractHorse)player.getVehicle();
 		if(!(target.hasMetadata("bar") && target.hasMetadata("max") && target.hasMetadata("modifier"))){
 			return;
 		}

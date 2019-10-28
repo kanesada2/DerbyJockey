@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,9 +29,10 @@ public final class Util {
 		 horseWhip.setItemMeta(Meta);
 		 return horseWhip;
 	 }
-	public static ShapelessRecipe getHorseWhipRecipe(){
+	public static ShapelessRecipe getHorseWhipRecipe(NamespacedKey key){
 		 ItemStack horseWhip = getHorseWhip();
-		 ShapelessRecipe Recipe = new ShapelessRecipe(horseWhip);
+
+		 ShapelessRecipe Recipe = new ShapelessRecipe(key, horseWhip); 
 		 Recipe.addIngredient(Material.STICK);
 		 Recipe.addIngredient(Material.LEATHER);
 		 return Recipe;

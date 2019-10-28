@@ -3,14 +3,14 @@ package com.github.kanesada2.DerbyJockey;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BossBar;
-import org.bukkit.entity.Horse;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.event.block.Action;
 
 public class StaminaBarManager {
-	private Horse horse;
+	private AbstractHorse horse;
 	private BossBar bar;
 	private int level;
-	public StaminaBarManager(Horse horse, BossBar bar, int level){
+	public StaminaBarManager(AbstractHorse horse, BossBar bar, int level){
 		this.horse = horse;
 		this.bar = bar;
 		this.level = level;

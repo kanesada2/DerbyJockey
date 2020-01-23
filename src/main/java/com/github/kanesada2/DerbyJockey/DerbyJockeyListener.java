@@ -19,7 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
@@ -268,6 +268,13 @@ public class DerbyJockeyListener implements Listener {
 		player.setMetadata("cooltime", new FixedMetadataValue(plugin, true));
 		new PlayerCoolDownTask(plugin,player).runTaskLater(plugin, 20);
 	}
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onWeight(InventoryDragEvent e) {
+		if(!(e.getWhoClicked() instanceof Player)) return;
+		if(!(Util.isWeightedArmor(e.getCursor)) || Util.isWeightedArmor(e.getOldCursor())) return;
+	}
+
 	//For Debugging "targeting" fearture alone
 	/*@EventHandler(priority = EventPriority.LOW)
 	public void onTarget(PlayerDropItemEvent e){

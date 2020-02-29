@@ -13,7 +13,9 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -158,7 +160,7 @@ public class DerbyJockeyListener implements Listener {
 			new StaminaBarManager(horse, bar, level).unleash();
 		}
 		if(horse.hasMetadata("targeting")){
-			AbstractHorse target = (AbstractHorse)horse.getMetadata("targeting").get(0).value();
+			Vehicle target = (Vehicle)horse.getMetadata("targeting").get(0).value();
 			if(horse.getLocation().distance(target.getLocation()) >= 10){
 				if(horse.hasMetadata("unleashed")){
 					bar.setColor(BarColor.PINK);
@@ -247,11 +249,14 @@ public class DerbyJockeyListener implements Listener {
 			horse.removeMetadata("targeting", plugin);
 		}
 		Collection<Entity> entities = horse.getNearbyEntities(5, 2, 5);
-		AbstractHorse target = null;
+		Vehicle target = null;
 		for(Entity entity : entities){
 			if(entity instanceof AbstractHorse && entity.hasMetadata("good")){
 				target = (AbstractHorse)entity;
 				break;
+			}
+			if(entity instanceof Minecart){
+				target = (Minecart)entity;
 			}
 		}
 		if(target != null){
@@ -260,10 +265,13 @@ public class DerbyJockeyListener implements Listener {
 			bar.setColor(BarColor.RED);
 			Vector toTarget = target.getLocation().subtract(horse.getLocation()).toVector().setY(0);
 			if(toTarget.dot(horse.getLocation().getDirection().setY(0)) > 0 && !target.hasMetadata("targeted")){
-				target.setMetadata("targeted", new FixedMetadataValue(plugin, 0));
-				int targetLv = new SpeedLevelManager(target).accelerate();
-				BossBar targetBar = (BossBar)target.getMetadata("bar").get(0).value();
-				new StaminaBarManager(target, targetBar, targetLv).formatTitle();
+				if(target instanceof AbstractHorse){
+					target.setMetadata("targeted", new FixedMetadataValue(plugin, 0));
+					AbstractHorse horseTarget = (AbstractHorse)target;
+					int targetLv = new SpeedLevelManager(horseTarget).accelerate();
+					BossBar targetBar = (BossBar)target.getMetadata("bar").get(0).value();
+					new StaminaBarManager(horseTarget, targetBar, targetLv).formatTitle();
+				}
 			}
 		}
 		player.setMetadata("cooltime", new FixedMetadataValue(plugin, true));

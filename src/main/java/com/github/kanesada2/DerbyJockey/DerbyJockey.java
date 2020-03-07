@@ -1,5 +1,8 @@
 package com.github.kanesada2.DerbyJockey;
 
+import java.util.List;
+
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DerbyJockey extends JavaPlugin {
@@ -19,6 +22,9 @@ public class DerbyJockey extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
+        List<World> worlds = getServer().getWorlds();
+        for(World world : worlds){
+            Util.resetWorldJockeys(world);
+        }
     }
 }

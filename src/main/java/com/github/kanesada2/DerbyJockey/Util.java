@@ -1,17 +1,24 @@
 package com.github.kanesada2.DerbyJockey;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.boss.BossBar;
+import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffectType;
 
 public final class Util {
 	private Util(){}
@@ -102,6 +109,51 @@ public final class Util {
 				  continue;
 			  }
 			player.sendMessage(msg);
+		}
+	}
+
+	public static void resetJockey(AbstractHorse horse, Player player)
+	{
+		BossBar bar = (BossBar)horse.getMetadata("bar").get(0).value();
+		bar.removeAll();
+		horse.removePotionEffect(PotionEffectType.SPEED);
+		horse.removePotionEffect(PotionEffectType.SLOW);
+		horse.removeMetadata("good", plugin);
+		AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+		double nowSpeed = attr.getValue();
+		double baseSpeed = horse.getMetadata("baseSpeed").get(0).asDouble();
+		if(nowSpeed != baseSpeed){
+			attr.setBaseValue(baseSpeed);
+		}
+		if(horse.hasMetadata("exhausted")){
+			horse.removeMetadata("exhausted", plugin);
+		}
+		if(horse.hasMetadata("targeting")){
+			horse.removeMetadata("targeting", plugin);
+		}
+		if(horse.hasMetadata("targeted")){
+			horse.removeMetadata("targeted", plugin);
+		}
+		if(horse.hasMetadata("raised")){
+			horse.removeMetadata("raised", plugin);
+		}
+		if(player.hasMetadata("cooltime")){
+			player.removeMetadata("cooltime", plugin);
+		}
+		if(horse.hasMetadata("unleashed")){
+			horse.removeMetadata("unleashed", plugin);
+		}
+	}
+
+	public static void resetWorldJockeys(World world)
+	{
+		Collection<Player> players = world.getEntitiesByClass(Player.class);
+		for(Player player : players){
+			if(!(player.isInsideVehicle() && player.getVehicle() instanceof AbstractHorse)) continue;
+			AbstractHorse horse = (AbstractHorse)player.getVehicle();
+			if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") 
+				&& horse.hasMetadata("good") && horse.hasMetadata("baseSpeed"))) continue;
+			resetJockey(horse, player);
 		}
 	}
 }

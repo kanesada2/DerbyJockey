@@ -24,6 +24,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
@@ -95,36 +96,19 @@ public class DerbyJockeyListener implements Listener {
 		}
 		AbstractHorse horse = (AbstractHorse)e.getVehicle();
 		Player player = (Player)e.getExited();
-		if(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") 
-			&& horse.hasMetadata("good") && horse.hasMetadata("baseSpeed"))
-		{
-			BossBar bar = (BossBar)horse.getMetadata("bar").get(0).value();
-			bar.removeAll();
-			horse.removePotionEffect(PotionEffectType.SPEED);
-			horse.removePotionEffect(PotionEffectType.SLOW);
-			horse.removeMetadata("good", plugin);
-			AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-			double nowSpeed = attr.getValue();
-			double baseSpeed = horse.getMetadata("baseSpeed").get(0).asDouble();
-			if(nowSpeed != baseSpeed){
-				attr.setBaseValue(baseSpeed);
-			}
-		}
-		if(horse.hasMetadata("exhausted")){
-			horse.removeMetadata("exhausted", plugin);
-		}
-		if(horse.hasMetadata("targeting")){
-			horse.removeMetadata("targeting", plugin);
-		}
-		if(horse.hasMetadata("targeted")){
-			horse.removeMetadata("targeted", plugin);
-		}
-		if(player.hasMetadata("cooltime")){
-			player.removeMetadata("cooltime", plugin);
-		}
-		if(horse.hasMetadata("unleashed")){
-			horse.removeMetadata("unleashed", plugin);
-		}
+		if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") 
+		&& horse.hasMetadata("good") && horse.hasMetadata("baseSpeed"))) return;
+		Util.resetJockey(horse, player);
+	}
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onJockeyQuit(PlayerQuitEvent e){
+		if(!(e.getPlayer().isInsideVehicle() && e.getPlayer().getVehicle() instanceof AbstractHorse)) return;
+		Player player = e.getPlayer();
+		AbstractHorse horse = (AbstractHorse)player.getVehicle();
+		if(!(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") 
+		&& horse.hasMetadata("good") && horse.hasMetadata("baseSpeed"))) return;
+		Util.resetJockey(horse, player);
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onSprint(PlayerMoveEvent e){
@@ -183,7 +167,12 @@ public class DerbyJockeyListener implements Listener {
 			horse.removePotionEffect(PotionEffectType.SLOW);
 			if(!horse.hasMetadata("exhausted")){
 				AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-				double exhausted = attr.getValue() * modifier;
+				String metadataKey = "baseSpeed";
+				if(horse.hasMetadata("unleashed")){
+					metadataKey = "unleashed";
+				}
+				double baseValue = horse.getMetadata(metadataKey).get(0).asDouble();
+				double exhausted = baseValue * modifier;
 				attr.setBaseValue(exhausted);
 				horse.setMetadata("exhausted", new FixedMetadataValue(plugin, exhausted));
 				new StaminaBarManager(horse,bar,0).exhaust();

@@ -142,7 +142,8 @@ public class DerbyJockeyListener implements Listener {
 			horse.removePotionEffect(PotionEffectType.SPEED);
 			AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
 			double unleashed = attr.getValue() * 1.1;
-			horse.setMetadata("unleashed", new FixedMetadataValue(plugin, unleashed));
+			double unleashedBase = horse.getMetadata("baseSpeed").get(0).asDouble() * 1.1;
+			horse.setMetadata("unleashed", new FixedMetadataValue(plugin, unleashedBase));
 			attr.setBaseValue(unleashed);
 			horse.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, level));
 			player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1, 1);

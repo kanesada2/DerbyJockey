@@ -1,6 +1,10 @@
 package com.github.kanesada2.DerbyJockey;
 
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AbstractHorse;
+import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -30,6 +34,14 @@ public class SpeedLevelManager {
 		}else{
 			horse.removePotionEffect(PotionEffectType.SLOW);
 		}
+		double maxLevel = horse.getMetadata("max").get(0).asDouble();
+		if(level >= maxLevel && !horse.hasMetadata("raised")){
+			double modifier = (horse.getMetadata("modifier").get(0).asDouble() - 0.55) * 0.2 + 1;
+			AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+			double raised = attr.getValue() * modifier;
+			attr.setBaseValue(raised);
+			horse.setMetadata("raised", new FixedMetadataValue(DerbyJockey.getPlugin(DerbyJockey.class), raised));
+		}
 		return level;
 	}
 
@@ -45,6 +57,14 @@ public class SpeedLevelManager {
 			if(level > 0){
 				horse.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, level));
 			}
+		}
+		if(horse.hasMetadata("raised")){
+			horse.removeMetadata("raised", DerbyJockey.getPlugin(DerbyJockey.class));
+			String metadataKey = "baseSpeed";
+			if(horse.hasMetadata("unleashed")){
+				metadataKey = "unleashed";
+			}
+			horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(horse.getMetadata(metadataKey).get(0).asDouble());
 		}
 		return level;
 	}

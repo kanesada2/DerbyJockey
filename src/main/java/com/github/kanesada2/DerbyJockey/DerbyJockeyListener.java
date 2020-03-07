@@ -61,7 +61,7 @@ public class DerbyJockeyListener implements Listener {
 		}
 		new StaminaBarManager(horse, bar, 0).init();
 		bar.addPlayer(player);
-		if(horse.hasMetadata("max") && horse.hasMetadata("modifier")){
+		if(horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("baseSpeed")){
 			spanModifier = horse.getMetadata("modifier").get(0).asDouble();
 			maxSpeedLevel = horse.getMetadata("max").get(0).asInt();
 		}else{
@@ -81,6 +81,7 @@ public class DerbyJockeyListener implements Listener {
 			spanModifier = 1.0d - ((double)Util.getSumfromString(spec.substring(4, 9)) / 100);
 			horse.setMetadata("max", new FixedMetadataValue(plugin, maxSpeedLevel));
 			horse.setMetadata("modifier", new FixedMetadataValue(plugin, spanModifier));
+			horse.setMetadata("baseSpeed", new FixedMetadataValue(plugin, horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).getValue()));
 		}
 		int goodFeeling = (int)(Math.random() * maxSpeedLevel);
 		horse.setMetadata("good", new FixedMetadataValue(plugin, goodFeeling));
@@ -94,17 +95,23 @@ public class DerbyJockeyListener implements Listener {
 		}
 		AbstractHorse horse = (AbstractHorse)e.getVehicle();
 		Player player = (Player)e.getExited();
-		if(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") && horse.hasMetadata("good")){
+		if(horse.hasMetadata("bar") && horse.hasMetadata("max") && horse.hasMetadata("modifier") 
+			&& horse.hasMetadata("good") && horse.hasMetadata("baseSpeed"))
+		{
 			BossBar bar = (BossBar)horse.getMetadata("bar").get(0).value();
 			bar.removeAll();
 			horse.removePotionEffect(PotionEffectType.SPEED);
 			horse.removePotionEffect(PotionEffectType.SLOW);
 			horse.removeMetadata("good", plugin);
+			AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+			double nowSpeed = attr.getValue();
+			double baseSpeed = horse.getMetadata("baseSpeed").get(0).asDouble();
+			if(nowSpeed != baseSpeed){
+				attr.setBaseValue(baseSpeed);
+			}
 		}
 		if(horse.hasMetadata("exhausted")){
-			double speed = horse.getMetadata("exhausted").get(0).asDouble();
 			horse.removeMetadata("exhausted", plugin);
-			horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
 		}
 		if(horse.hasMetadata("targeting")){
 			horse.removeMetadata("targeting", plugin);
@@ -116,9 +123,7 @@ public class DerbyJockeyListener implements Listener {
 			player.removeMetadata("cooltime", plugin);
 		}
 		if(horse.hasMetadata("unleashed")){
-			double speed = horse.getMetadata("unleashed").get(0).asDouble();
 			horse.removeMetadata("unleashed", plugin);
-			horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(speed);
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
@@ -152,8 +157,9 @@ public class DerbyJockeyListener implements Listener {
 		if(level >= max && !horse.hasMetadata("unleashed") && Math.floor(Math.random() * 1500 / Math.pow(modifier, 5)) == 24){
 			horse.removePotionEffect(PotionEffectType.SPEED);
 			AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-			horse.setMetadata("unleashed", new FixedMetadataValue(plugin, attr.getValue()));
-			attr.setBaseValue(attr.getValue() * 1.1);
+			double unleashed = attr.getValue() * 1.1;
+			horse.setMetadata("unleashed", new FixedMetadataValue(plugin, unleashed));
+			attr.setBaseValue(unleashed);
 			horse.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, Integer.MAX_VALUE, level));
 			player.playSound(player.getLocation(), Sound.ITEM_TOTEM_USE, 1, 1);
 			player.sendTitle(ChatColor.LIGHT_PURPLE + "POTENTIAL UNLEASHED", "", 10, 60, 10);
@@ -176,16 +182,11 @@ public class DerbyJockeyListener implements Listener {
 			horse.removePotionEffect(PotionEffectType.SPEED);
 			horse.removePotionEffect(PotionEffectType.SLOW);
 			if(!horse.hasMetadata("exhausted")){
-				double baseValue = 0;
 				AttributeInstance attr = horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
-				if(horse.hasMetadata("unleashed")){
-					baseValue = horse.getMetadata("unleashed").get(0).asDouble();
-				}else{
-					baseValue = attr.getValue();
-				}
-				horse.setMetadata("exhausted", new FixedMetadataValue(plugin, baseValue));
+				double exhausted = attr.getValue() * modifier;
+				attr.setBaseValue(exhausted);
+				horse.setMetadata("exhausted", new FixedMetadataValue(plugin, exhausted));
 				new StaminaBarManager(horse,bar,0).exhaust();
-				attr.setBaseValue(attr.getValue() * modifier);
 			}
 		}
 	}
